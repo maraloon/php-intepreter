@@ -1,13 +1,28 @@
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum Value {
+    Empty,
+    Is(String),
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::Is(value) => write!(f, "{}", value),
+            Value::Empty => write!(f, ""),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Illegal(String),
     Eof,
-    Ident(String),
-    Int(String),
-    Var(String),
-    Assign,
+    Ident(Value), // add, foobar, x, y, ...
+    Int(Value),
+    Var(Value),
+    Assign, // =
     Plus,
     Comma,
     Semicolon,
@@ -119,7 +134,7 @@ impl Lexer {
                 self.read_char();
                 let var_name = self.read_var_name();
                 return Ok(match var_name {
-                    Ok(_) => Token::Var(var_name.unwrap()),
+                    Ok(_) => Token::Var(Value::Is(var_name.unwrap())),
                     Err(e) => Token::Illegal(e.to_string()),
                 });
             }
@@ -132,11 +147,11 @@ impl Lexer {
                     "if" => Token::If,
                     "else" => Token::Else,
                     "return" => Token::Return,
-                    _ => Token::Ident(literal),
+                    _ => Token::Ident(Value::Is(literal)),
                 });
             }
             b'0'..=b'9' => {
-                return Ok(Token::Int(self.read_int()));
+                return Ok(Token::Int(Value::Is(self.read_int())));
             }
             0 => Token::Eof,
             _ => unreachable!("if you see it - shame on you"),
@@ -188,7 +203,7 @@ impl Lexer {
 
 #[cfg(test)]
 mod tests {
-    use super::{Lexer, Token};
+    use super::{Lexer, Token, Value};
 
     #[test]
     fn get_next_token() -> Result<(), String> {
@@ -197,43 +212,44 @@ mod tests {
         $ten = 10;
 
         $add = function($x, $y) {
-            $x + $y;
+            return $x + $y;
         };
 
         $result = add($five, $ten);";
 
         let tokens = vec![
             Token::StartTag,
-            Token::Var(String::from("five")),
+            Token::Var(Value::Is(String::from("five"))),
             Token::Assign,
-            Token::Int(String::from("5")),
+            Token::Int(Value::Is(String::from("5"))),
             Token::Semicolon,
-            Token::Var(String::from("ten")),
+            Token::Var(Value::Is(String::from("ten"))),
             Token::Assign,
-            Token::Int(String::from("10")),
+            Token::Int(Value::Is(String::from("10"))),
             Token::Semicolon,
-            Token::Var(String::from("add")),
+            Token::Var(Value::Is(String::from("add"))),
             Token::Assign,
             Token::Function,
             Token::Lparen,
-            Token::Var(String::from("x")),
+            Token::Var(Value::Is(String::from("x"))),
             Token::Comma,
-            Token::Var(String::from("y")),
+            Token::Var(Value::Is(String::from("y"))),
             Token::Rparen,
             Token::Lbrace,
-            Token::Var(String::from("x")),
+            Token::Return,
+            Token::Var(Value::Is(String::from("x"))),
             Token::Plus,
-            Token::Var(String::from("y")),
+            Token::Var(Value::Is(String::from("y"))),
             Token::Semicolon,
             Token::Rbrace,
             Token::Semicolon,
-            Token::Var(String::from("result")),
+            Token::Var(Value::Is(String::from("result"))),
             Token::Assign,
-            Token::Ident(String::from("add")),
+            Token::Ident(Value::Is(String::from("add"))),
             Token::Lparen,
-            Token::Var(String::from("five")),
+            Token::Var(Value::Is(String::from("five"))),
             Token::Comma,
-            Token::Var(String::from("ten")),
+            Token::Var(Value::Is(String::from("ten"))),
             Token::Rparen,
             Token::Semicolon,
             Token::Eof,
@@ -253,9 +269,9 @@ mod tests {
     fn false_var_name() -> Result<(), String> {
         let input = "$1five";
 
-        let tokens = vec![
-            Token::Illegal(String::from("First symbol of var can't be digit")),
-        ];
+        let tokens = vec![Token::Illegal(String::from(
+            "First symbol of var can't be digit",
+        ))];
 
         let mut lexer = Lexer::new(input.into());
         for expected_token in tokens {
