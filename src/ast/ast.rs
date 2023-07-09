@@ -16,23 +16,11 @@ pub struct Program {
     pub statements: Vec<Statement>,
 }
 
-impl Program {
-    // fn token(&self) -> &str {
-    //     match self.statements.is_empty() {
-    //         true => "",
-    //         false => self.statements.first().unwrap().token(),
-    //     }
-    // }
-}
-
 pub enum Statement {
     Var(VarStatement),
 }
 
 pub struct VarStatement {
-    // token: Token, // Token.Var 
-    // name: Identifier,
-    // value: Box<dyn Expression>,
     pub token: Token,
     pub name: String,
     pub value: String,
@@ -51,11 +39,12 @@ impl Node for VarStatement {
 }
 
 // pub struct Identifier {
-//     token: Token, // Token.Ident
-//     // value: String,
+//     pub token: Token,
+//     // pub value: String,
+//     pub value: Value,
 // }
 //
-// impl Expression for Identifier {
+// impl ExpressionNode for Identifier {
 //     fn expression_node(&self) {
 //         todo!()
 //     }
@@ -63,7 +52,6 @@ impl Node for VarStatement {
 //
 // impl Node for Identifier {
 //     fn token(&self) -> Token {
-//         "x".to_string()
-//         // return self.token.to_string().as_str();
+//         return Token::Ident(Value::Empty); 
 //     }
 // }
