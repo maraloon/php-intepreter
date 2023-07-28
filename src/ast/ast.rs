@@ -51,21 +51,3 @@ impl Node for VarStatement {
         return "$".to_owned() + &self.name + " = " + &self.value + ";";
     }
 }
-
-// pub struct Identifier {
-//     pub token: Token,
-//     // pub value: String,
-//     pub value: Value,
-// }
-//
-// impl ExpressionNode for Identifier {
-//     fn expression_node(&self) {
-//         todo!()
-//     }
-// }
-//
-// impl Node for Identifier {
-//     fn token(&self) -> Token {
-//         return Token::Ident(Value::Empty);
-//     }
-// }
