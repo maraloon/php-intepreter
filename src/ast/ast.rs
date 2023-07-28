@@ -21,7 +21,6 @@ pub enum Statement {
 }
 
 pub struct VarStatement {
-    pub token: Token,
     pub name: String,
     pub value: String,
 }

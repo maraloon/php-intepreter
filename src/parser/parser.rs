@@ -61,7 +61,6 @@ impl Parser {
             Token::Var(v) => self.parse_var_statement(v.clone()),
             // todo
             _ => Ok(ast::Statement::Var(ast::VarStatement {
-                token: Token::Var(Value::Empty),
                 name: "x".to_string(),
                 value: "7".to_string(),
             })),
@@ -80,7 +79,6 @@ impl Parser {
         }
 
         Ok(ast::Statement::Var(ast::VarStatement {
-            token: Token::Var(Value::Empty),
             name: var_name.to_string(),
             value,
         }))
@@ -101,10 +99,7 @@ impl Parser {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        ast::ast::{self, Node},
-        lexer::lexer::{Token, Value},
-    };
+    use crate::ast::ast;
 
     use super::{Lexer, Parser};
 
@@ -131,15 +126,6 @@ mod tests {
     fn test_var_statement(var_statement: &ast::Statement, name: &str, value: &str) {
         match var_statement {
             ast::Statement::Var(var_statement) => {
-                // todo а нахуя в итоге это поле и проверка нужна?
-                if var_statement.token() != Token::Var(Value::Empty) {
-                    panic!(
-                        "statement.token_literal not {}. got={}",
-                        Token::Var(Value::Empty),
-                        var_statement.token()
-                    )
-                }
-
                 if var_statement.name != name {
                     panic!(
                         "var_statement.name not '{}'. got={}",
