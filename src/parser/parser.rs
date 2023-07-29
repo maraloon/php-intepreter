@@ -1,5 +1,5 @@
 use crate::{
-    ast::ast::{self, Statement},
+    ast::ast::{self, Statement, VarStatement},
     lexer::lexer::{Lexer, Token, Value},
 };
 
@@ -56,29 +56,32 @@ impl Parser {
         self.peek_token = self.lexer.next_token().unwrap();
     }
 
-    fn parse_statement(&mut self) -> Result<ast::Statement, String> {
+    fn parse_statement(&mut self) -> Result<Statement, String> {
         match &self.current_token {
             Token::Var(v) => self.parse_var_statement(v.clone()),
+            // Token::Return(v) => self.parse_return_statement(v.clone()),
             // todo
-            _ => Ok(ast::Statement::Var(ast::VarStatement {
-                name: "x".to_string(),
-                value: "7".to_string(),
-            })),
+            _ => panic!("parse_statement()"),
         }
     }
 
-    fn parse_var_statement(&mut self, var_name: Value) -> Result<ast::Statement, String> {
+    fn parse_expression(&mut self) -> String {
+        match &self.current_token {
+            Token::Int(v) => v.clone().to_string(),
+            _ => todo!(),
+        }
+    }
+
+    fn parse_var_statement(&mut self, var_name: Value) -> Result<Statement, String> {
         self.expect_peek(Token::Assign)?;
         self.next_token();
-        // todo
-        // let value = self.parse_expression();
-        let value = "5".to_string();
+        let value = self.parse_expression();
 
         if self.peek_token == Token::Semicolon {
             self.next_token()
         }
 
-        Ok(ast::Statement::Var(ast::VarStatement {
+        Ok(Statement::Var(VarStatement {
             name: var_name.to_string(),
             value,
         }))

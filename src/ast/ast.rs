@@ -2,13 +2,8 @@ pub trait Node {
     fn string(&self) -> String;
 }
 
-pub trait StatementNode: Node {
-    fn statement_node(&self);
-}
-
-// trait ExpressionNode: Node {
-//     fn expression_node(&self);
-// }
+pub trait StatementNode: Node {}
+trait ExpressionNode: Node {}
 
 pub struct Program {
     pub statements: Vec<Statement>,
@@ -26,29 +21,37 @@ impl Node for Program {
 
 pub enum Statement {
     Var(VarStatement),
+    Return(ReturnStatement),
 }
 impl Statement {
     fn string(&self) -> String {
-        match self {
-            Statement::Var(s) => s.string(),
+        match Option::Some(self) {
+            Some(statement) => statement.string(),
+            _ => panic!("fail string()"),
         }
     }
 }
+// todo another statement. To see the structure and maybe not use enum Statement
+// todo Expressions for value
 
 pub struct VarStatement {
     pub name: String,
     pub value: String,
 }
 
-impl StatementNode for VarStatement {
-    fn statement_node(&self) {
-        todo!()
-    }
-}
-
 impl Node for VarStatement {
     fn string(&self) -> String {
         return "$".to_owned() + &self.name + " = " + &self.value + ";";
+    }
+}
+
+pub struct ReturnStatement {
+    pub return_value: String,
+}
+
+impl Node for ReturnStatement {
+    fn string(&self) -> String {
+        return "return ".to_owned() + &self.return_value;
     }
 }
 
