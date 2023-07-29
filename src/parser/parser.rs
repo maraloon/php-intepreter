@@ -59,7 +59,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Result<Statement, String> {
         match &self.current_token {
             Token::Var(v) => self.parse_var_statement(v.clone()),
-            // Token::Return(v) => self.parse_return_statement(v.clone()),
+            Token::Return => self.parse_return_statement(),
             // todo
             _ => panic!("parse_statement()"),
         }
@@ -87,6 +87,20 @@ impl Parser {
         }))
     }
 
+    fn parse_return_statement(&mut self) -> Result<Statement, String> {
+        self.next_token();
+        let value = self.parse_expression();
+        self.next_token();
+
+        if self.peek_token == Token::Semicolon {
+            self.next_token()
+        }
+
+        Ok(Statement::Return(ast::ReturnStatement {
+            return_value: value,
+        }))
+    }
+
     fn expect_peek(&mut self, token: Token) -> Result<(), String> {
         if self.peek_token == token {
             self.next_token();
@@ -102,7 +116,10 @@ impl Parser {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::ast;
+    use crate::ast::ast::{
+        self,
+        Statement::{Return, Var},
+    };
 
     use super::{Lexer, Parser};
 
@@ -126,9 +143,40 @@ mod tests {
         test_var_statement(statement, input.1, input.2);
     }
 
+    #[test]
+    fn return_statement() {
+        // let input = ("return 5;", 5);
+        let input = ("return 5;", "5");
+
+        let lexer = Lexer::new(String::from(input.0));
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program();
+        check_parser_errors(parser);
+
+        if program.statements.len() != 1 {
+            panic!(
+                "program.statements does not contain 1 statements. got={}",
+                program.statements.len()
+            )
+        }
+
+        let statement = &program.statements[0];
+        match statement {
+            Return(return_statement) => {
+                if return_statement.return_value != input.1 {
+                    panic!(
+                        "return_statement.return_value not '{}'. got={}",
+                        input.1, return_statement.return_value
+                    )
+                }
+            }
+            _ => panic!("expected ast::Statement::Return()"),
+        }
+    }
+
     fn test_var_statement(var_statement: &ast::Statement, name: &str, value: &str) {
         match var_statement {
-            ast::Statement::Var(var_statement) => {
+            Var(var_statement) => {
                 if var_statement.name != name {
                     panic!(
                         "var_statement.name not '{}'. got={}",
@@ -140,7 +188,7 @@ mod tests {
                     panic!("statement.value not {}, got {}", value, var_statement.value);
                 }
             }
-            _ => panic!("expected ast::Statement::Var(var_statement)"),
+            _ => panic!("expected ast::Statement::Var()"),
         }
     }
 
